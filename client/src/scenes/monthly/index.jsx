@@ -10,7 +10,7 @@ const Monthly = () => {
 
   const [formattedData] = useMemo(() => {
     if (!data) return [];
-
+    console.log(data);
     const { monthlyData } = data;
     const totalSalesLine = {
       id: "totalSales",
@@ -40,7 +40,7 @@ const Monthly = () => {
 
   return (
     <Box m="1.5rem 2.5rem">
-      <Header title="MONTHLY SALES" subtitle="Chart of monthlysales" />
+      <Header title="MONTHLY Traffic" subtitle="Chart of monthly traffic" />
       <Box height="75vh">
         {data ? (
           <ResponsiveLine

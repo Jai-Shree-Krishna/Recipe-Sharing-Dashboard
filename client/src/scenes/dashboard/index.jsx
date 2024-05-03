@@ -1,4 +1,4 @@
-import React from "react";
+import React , {useState, useEffect} from "react";
 import FlexBetween from "components/FlexBetween";
 import Header from "components/Header";
 import {
@@ -20,11 +20,32 @@ import BreakdownChart from "components/BreakdownChart";
 import OverviewChart from "components/OverviewChart";
 import { useGetDashboardQuery } from "state/api";
 import StatBox from "components/StatBox";
+import axios from "axios";
+import { ResponsiveLine } from "@nivo/line";
+
 
 const Dashboard = () => {
   const theme = useTheme();
   const isNonMediumScreens = useMediaQuery("(min-width: 1200px)");
   const { data, isLoading } = useGetDashboardQuery();
+
+  const [data1, setData] = useState([]);
+  const [isloading, setIsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://localhost:9001/homePage/data"); // Assuming your API endpoint for login activity data
+        setData(response.data);
+        console.log(response.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching login data:", error);
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const columns = [
     {
@@ -38,31 +59,36 @@ const Dashboard = () => {
       flex: 1,
     },
     {
-      field: "createdAt",
-      headerName: "CreatedAt",
-      flex: 1,
+      field: "recipeId",
+      headerName: "Recipe Id",
+      flex: 1
     },
     {
-      field: "products",
-      headerName: "# of Products",
-      flex: 0.5,
-      sortable: false,
-      renderCell: (params) => params.value.length,
-    },
-    {
-      field: "cost",
-      headerName: "Cost",
+      field: "datetime",
+      headerName: "datetime",
       flex: 1,
-      renderCell: (params) => `$${Number(params.value).toFixed(2)}`,
-    },
+    }
+    //, {
+    //   field: "products",
+    //   headerName: "# of Products",
+    //   flex: 0.5,
+    //   sortable: true,
+    //   renderCell: (params) => params.value.length,
+    // },
+    // {
+    //   field: "cost",
+    //   headerName: "Cost",
+    //   flex: 1,
+    //   renderCell: (params) => `$${Number(params.value).toFixed(2)}`,
+    // },
   ];
 
   return (
     <Box m="1.5rem 2.5rem">
       <FlexBetween>
-        <Header title="DASHBOARD" subtitle="Welcome to your dashboard" />
+        <Header title="HomePage" subtitle="Welcome to admin dashboard's homepage." />
 
-        <Box>
+        {/* <Box>
           <Button
             sx={{
               backgroundColor: theme.palette.secondary.light,
@@ -75,7 +101,7 @@ const Dashboard = () => {
             <DownloadOutlined sx={{ mr: "10px" }} />
             Download Reports
           </Button>
-        </Box>
+        </Box> */}
       </FlexBetween>
 
       <Box
@@ -90,8 +116,8 @@ const Dashboard = () => {
       >
         {/* ROW 1 */}
         <StatBox
-          title="Total Customers"
-          value={data && data.totalCustomers}
+          title="Total Users"
+          value={data1 && data1.totalUsers}
           increase="+14%"
           description="Since last month"
           icon={
@@ -101,8 +127,8 @@ const Dashboard = () => {
           }
         />
         <StatBox
-          title="Sales Today"
-          value={data && data.todayStats.totalSales}
+          title="Total Recipes"
+          value={data1 && data1.totalRecies}
           increase="+21%"
           description="Since last month"
           icon={
@@ -111,18 +137,9 @@ const Dashboard = () => {
             />
           }
         />
-        <Box
-          gridColumn="span 8"
-          gridRow="span 2"
-          backgroundColor={theme.palette.background.alt}
-          p="1rem"
-          borderRadius="0.55rem"
-        >
-          <OverviewChart view="sales" isDashboard={true} />
-        </Box>
         <StatBox
-          title="Monthly Sales"
-          value={data && data.thisMonthStats.totalSales}
+          title="Total comments"
+          value={data1 && data1.totalComments}
           increase="+5%"
           description="Since last month"
           icon={
@@ -132,8 +149,8 @@ const Dashboard = () => {
           }
         />
         <StatBox
-          title="Yearly Sales"
-          value={data && data.yearlySalesTotal}
+          title="Total Conversations"
+          value={data1 && data1.totalChats}
           increase="+43%"
           description="Since last month"
           icon={
@@ -143,7 +160,8 @@ const Dashboard = () => {
           }
         />
 
-        {/* ROW 2 */}
+        
+
         <Box
           gridColumn="span 8"
           gridRow="span 3"
@@ -176,11 +194,130 @@ const Dashboard = () => {
           <DataGrid
             loading={isLoading || !data}
             getRowId={(row) => row._id}
-            rows={(data && data.transactions) || []}
+            rows={(data && data.recipeViews) || []}
             columns={columns}
           />
         </Box>
+
+        <Header title="" subtitle="This week Recipes:" />
+
         <Box
+          gridColumn="span 8"
+          gridRow="span 3"
+          sx={{
+            "& .MuiDataGrid-root": {
+              border: "none",
+              borderRadius: "5rem",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: theme.palette.background.alt,
+            },
+            "& .MuiDataGrid-footerContainer": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderTop: "none",
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${theme.palette.secondary[200]} !important`,
+            },
+          }}
+        >
+          <DataGrid
+            loading={isLoading || !data}
+            getRowId={(row) => row._id}
+            rows={(data && data.recipeViews) || []}
+            columns={columns}
+          />
+        </Box>
+
+        <Header title="" subtitle="This week Conversation metadata:" />
+
+        <Box
+          gridColumn="span 8"
+          gridRow="span 3"
+          sx={{
+            "& .MuiDataGrid-root": {
+              border: "none",
+              borderRadius: "5rem",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: theme.palette.background.alt,
+            },
+            "& .MuiDataGrid-footerContainer": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderTop: "none",
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${theme.palette.secondary[200]} !important`,
+            },
+          }}
+        >
+          <DataGrid
+            loading={isLoading || !data}
+            getRowId={(row) => row._id}
+            rows={(data && data.recipeViews) || []}
+            columns={columns}
+          />
+        </Box>
+
+        <Header title="" subtitle="This week Comments:" />
+
+
+        <Box
+          gridColumn="span 8"
+          gridRow="span 3"
+          sx={{
+            "& .MuiDataGrid-root": {
+              border: "none",
+              borderRadius: "5rem",
+            },
+            "& .MuiDataGrid-cell": {
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderBottom: "none",
+            },
+            "& .MuiDataGrid-virtualScroller": {
+              backgroundColor: theme.palette.background.alt,
+            },
+            "& .MuiDataGrid-footerContainer": {
+              backgroundColor: theme.palette.background.alt,
+              color: theme.palette.secondary[100],
+              borderTop: "none",
+            },
+            "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+              color: `${theme.palette.secondary[200]} !important`,
+            },
+          }}
+        >
+          <DataGrid
+            loading={isLoading || !data}
+            getRowId={(row) => row._id}
+            rows={(data && data.recipeViews) || []}
+            columns={columns}
+          />
+        </Box>
+
+        {/* <Box
           gridColumn="span 4"
           gridRow="span 3"
           backgroundColor={theme.palette.background.alt}
@@ -199,10 +336,51 @@ const Dashboard = () => {
             Breakdown of real states and information via category for revenue
             made for this year and total sales.
           </Typography>
-        </Box>
+        </Box> */}
       </Box>
     </Box>
   );
 };
 
 export default Dashboard;
+
+
+const LineChart = (data) => {
+  return (
+    <div style={{ height: '400px' }}>
+      <ResponsiveLine
+        data={data}
+        margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+        xScale={{ type: 'point' }}
+        yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
+        curve="monotoneX"
+        axisTop={null}
+        axisRight={null}
+        axisBottom={{
+          legend: 'Date',
+          legendOffset: 36,
+          legendPosition: 'middle',
+        }}
+        axisLeft={{
+          legend: 'Number of Comments',
+          legendOffset: -40,
+          legendPosition: 'middle',
+        }}
+        enableGridX={false}
+        enableGridY={false}
+        enablePoints={false}
+        enableArea={true}
+        colors={{ scheme: 'category10' }} // You can customize the color scheme
+        theme={{
+          axis: {
+            ticks: {
+              text: {
+                fill: 'grey',
+              },
+            },
+          },
+        }}
+      />
+    </div>
+  );
+}

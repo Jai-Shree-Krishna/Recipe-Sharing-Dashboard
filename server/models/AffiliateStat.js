@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+// import DBs from "../index.js";
 
 const AffiliateStatSchema = new mongoose.Schema(
   {
